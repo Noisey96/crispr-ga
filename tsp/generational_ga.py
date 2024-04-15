@@ -63,48 +63,54 @@ def create_edge_table(parent_1, parent_2):
                 edge_table[parent_2[i + 1]].add((parent_2[i], False))
     return edge_table
  
-def edge_recombination_crossover(parent_1, parent_2):
-    edge_table = create_edge_table(parent_1, parent_2)
+def edge_recombination_crossover(parent_1, parent_2, p_c):
+    if random.uniform(0, 1) < p_c:
+        edge_table = create_edge_table(parent_1, parent_2)
 
-    current = math.floor(random.uniform(0, len(parent_1)))
-    child = [current]
-    while len(child) < len(parent_1):
-        edges = edge_table[current]
+        current = math.floor(random.uniform(0, len(parent_1)))
+        child = [current]
+        while len(child) < len(parent_1):
+            edges = edge_table[current]
 
-        # calculate common_edge_list and smallest_edge_list
-        common_edge_list = []
-        smallest_edge_list_size = float("inf")
-        smallest_edge_list = []
-        for edge in edges:
-            if edge[1]:
-                common_edge_list.append(edge[0])
+            # calculate common_edge_list and smallest_edge_list
+            common_edge_list = []
+            smallest_edge_list_size = float("inf")
+            smallest_edge_list = []
+            for edge in edges:
+                if edge[1]:
+                    common_edge_list.append(edge[0])
+                else:
+                    edge_list = edge_table[edge[0]]
+                    if len(edge_list) < smallest_edge_list_size:
+                        smallest_edge_list_size = len(edge_list)
+                        smallest_edge_list = [edge[0]]
+                    elif len(edge_list) == smallest_edge_list_size:
+                        smallest_edge_list.append(edge[0])
+
+            # pick based on common_edge_list, smallest_edge_list, or last vertex
+            if len(common_edge_list) != 0:
+                next = common_edge_list[math.floor(random.uniform(0, len(common_edge_list)))]
+            elif len(smallest_edge_list) != 0:
+                next = smallest_edge_list[math.floor(random.uniform(0, len(smallest_edge_list)))]
             else:
-                edge_list = edge_table[edge[0]]
-                if len(edge_list) < smallest_edge_list_size:
-                    smallest_edge_list_size = len(edge_list)
-                    smallest_edge_list = [edge[0]]
-                elif len(edge_list) == smallest_edge_list_size:
-                    smallest_edge_list.append(edge[0])
-        
-        # pick based on common_edge_list, smallest_edge_list, or last vertex
-        if len(common_edge_list) != 0:
-            next = common_edge_list[math.floor(random.uniform(0, len(common_edge_list)))]
-        elif len(smallest_edge_list) != 0:
-            next = smallest_edge_list[math.floor(random.uniform(0, len(smallest_edge_list)))]
+                for i in range(len(edge_table)):
+                    if edge_table[i] != None and i != current:
+                        next = i
+                        break
+
+            # remove current edge from edge_table
+            for edge in edges:
+                edge_table[edge[0]].remove((current, edge[1]))
+            edge_table[current] = None
+
+            current = next
+            child.append(current)
+        return child
+    else:
+        if random.uniform(0, 1) < 0.5:
+            return parent_1
         else:
-            for i in range(len(edge_table)):
-                if edge_table[i] != None and i != current:
-                    next = i
-                    break
-
-        # remove current edge from edge_table
-        for edge in edges:
-            edge_table[edge[0]].remove((current, edge[1]))
-        edge_table[current] = None
-
-        current = next
-        child.append(current)
-    return child
+            return parent_2
 
 def simple_inversion(gene, i, j):
     new_gene = list(gene[0:i])
@@ -148,25 +154,27 @@ def determine_n_best(list, n):
         indices.append(index)
     return indices
 
-def generational_ga(problem):
+def generational_ga(problem, parameters = {
+        "popsize": 100,
+        "maxgen": 1000,
+        "elitism": 2,
+        "tournament_size": 2,
+        "p_c": 1,
+        "p_m": 0.10,
+    }):
     graph = problem
 
-    parameters = {
-        "popsize": 1000,
-        "maxgen": 200,
+    functions = {
         "fitness_function": fitness_function,
-        "elitism": 5,
         "parent_selection": tournament_selection,
-        "tournament_size": 2,
         "recombination_operator": edge_recombination_crossover,
         "mutation_operator": simple_inversion_mutation,
-        "p_m": 0.10,
     }
 
     current_generation = generate_initial_generation(parameters["popsize"], len(graph))
     for n in range(parameters["maxgen"]):
         print(n)
-        fitnesses = parameters["fitness_function"](problem, current_generation)
+        fitnesses = functions["fitness_function"](problem, current_generation)
 
         next_generation = []
         elites = determine_n_best(fitnesses, parameters["elitism"])
@@ -175,13 +183,13 @@ def generational_ga(problem):
             next_generation.append(current_generation[elite])
 
         while len(next_generation) < len(current_generation):
-            [parent_1_index, parent_2_index] = parameters["parent_selection"](fitnesses, parameters["tournament_size"]) 
-            child = parameters["recombination_operator"](current_generation[parent_1_index], current_generation[parent_2_index])
-            child = parameters["mutation_operator"](child, parameters["p_m"])
+            [parent_1_index, parent_2_index] = functions["parent_selection"](fitnesses, parameters["tournament_size"]) 
+            child = functions["recombination_operator"](current_generation[parent_1_index], current_generation[parent_2_index], parameters["p_c"])
+            child = functions["mutation_operator"](child, parameters["p_m"])
             next_generation.extend([child])
         current_generation = next_generation
         
-    fitnesses = parameters["fitness_function"](problem, current_generation)
+    fitnesses = functions["fitness_function"](problem, current_generation)
 
     return min(fitnesses)
     

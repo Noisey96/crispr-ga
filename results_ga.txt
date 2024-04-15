@@ -1,9 +1,0 @@
-Cost: 10.011790760272198
-Time: 17742.38075
-----generational_ga over tsp/medium.csv----
-Cost: 3883.7638948613107
-Time: 4434.0055999999995
-----generational_ga over tsp/d657.tsp----
-Cost: 373765.6311524267
-Time: 420626.77259999997
-----generational_ga over tsp/d657.tsp----

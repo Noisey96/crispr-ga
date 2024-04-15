@@ -1,4 +1,5 @@
 import math
+import numpy
 from datetime import datetime
 from multiprocessing import Pool
 from knapsack.dp import dp
@@ -37,6 +38,8 @@ def setup_tsp(filename, size):
             vertex = [float(line[1]), float(line[2])]
             vertices.append(vertex)
 
+    print(vertices)
+
     ## generate graph from the vertices
     graph = []
     for i in range(0, len(vertices)):
@@ -59,9 +62,9 @@ def setup_knapsack(folder, _):
 
     return [capacity, prices, weights]
 
-def run_algo_once(problem, algo):
+def run_algo_once(problem, parameters, algo):
     before = datetime.now()
-    solution = algo(problem)
+    solution = algo(problem, parameters)
     after = datetime.now()
 
     #solution = "Cost: " + str(solution) + "\n"
@@ -72,16 +75,16 @@ def run_algo_once(problem, algo):
     time = delta.total_seconds() * 1000
     return solution, time
 
-def run_algo(problem, algo, runs):
+def run_algo(problem, parameters, algo, runs):
     with Pool(5) as pool:
-        result = pool.starmap(run_algo_once, [(problem, algo) for _ in range(0, runs)])
+        result = pool.starmap(run_algo_once, [(problem, parameters, algo) for _ in range(0, runs)])
     return result
 
-def generate_results(setup_problem, algo, sizes, input_filename, output_filename, runs = 20):
+def generate_results(setup_problem, parameters, algo, sizes, input_filename, output_filename, runs = 20):
     for size in sizes:
         with open(output_filename, "a") as output_file:
             problem = setup_problem(input_filename, size)
-            result = run_algo(problem, algo, runs)
+            result = run_algo(problem, parameters, algo, runs)
             total_cost = 0
             total_time = 0
             for run in result:
@@ -90,12 +93,37 @@ def generate_results(setup_problem, algo, sizes, input_filename, output_filename
             output_file.write("Cost: " + str(total_cost / runs) + "\n")
             output_file.write("Time: " + str(total_time / runs) + "\n")
     with open(output_filename, "a") as output_file:
-        output_file.write("----" + algo.__name__ + " over " + input_filename + "----" + "\n")
+        output_file.write("----" + algo.__name__ + " with " + str(parameters) + " over " + input_filename + "----" + "\n")
+
+def tune_parameters(setup_problem, algo, sizes, input_filename, output_filename, runs = 20):
+
+    popsizes = [100, 200, 300]
+    maxgens = [100, 200, 300]
+    elitisms = [1, 5, 10]
+    tournament_sizes = [2, 5, 10]
+    p_cs = [0.8, 0.9, 1.0]
+    p_ms = [0.01, 0.05, 0.10]
+
+    parameter_combinations = numpy.array(numpy.meshgrid(popsizes, maxgens, elitisms, tournament_sizes, p_cs, p_ms)).T.reshape(-1, 6)
+    for parameter_combination in parameter_combinations:
+        parameters = {
+            "popsize": int(parameter_combination[0]),
+            "maxgen": int(parameter_combination[1]),
+            "elitism": int(parameter_combination[2]),
+            "tournament_size": int(parameter_combination[3]),
+            "p_c": parameter_combination[4],
+            "p_m": parameter_combination[5],
+        }
+        generate_results(setup_problem, parameters, algo, sizes, input_filename, output_filename, runs)
+    
 
 if __name__ == '__main__':
+
+    tune_parameters(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.txt", 5)
+
     #print(setup_knapsack("p01", 1))
 
-    generate_results(setup_tsp, tsp_generational_ga, [657], "tsp/d657.tsp", "results_ga.txt", 5)
+    #generate_results(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.txt", 5)
 
     #generate_results(setup_csv_tsp, held_karp, list(range(10, 20, 10)), "tsp/medium.csv", "results.txt"))
     #generate_results(setup_csv_tsp, tsp_generational_ga, [100], "tsp/medium.csv", "results_ga.txt")
