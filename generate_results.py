@@ -81,8 +81,6 @@ def run_algo(problem, parameters, algo, runs):
     return result
 
 def generate_results(setup_problem, parameters, algo, sizes, input_filename, output_filename, runs = 20):
-    with open(output_filename, "a") as output_file:
-        output_file.write("Problem,Algorithm,Parameters,Cost,Time")
     for size in sizes:
         with open(output_filename, "a") as output_file:
             problem = setup_problem(input_filename, size)
@@ -92,7 +90,7 @@ def generate_results(setup_problem, parameters, algo, sizes, input_filename, out
             for run in result:
                 total_cost += run[0]
                 total_time += run[1]
-            output_file.write(input_filename + "," + algo.__name__ + "," + str(parameters) + "," + str(total_cost / runs) + "," + str(total_time / runs) + "\n")
+            output_file.write("\n" + input_filename + "," + str(size) + "," + algo.__name__ + "," + str(parameters) + "," + str(total_cost / runs) + "," + str(total_time / runs))
 
 def tune_parameters(setup_problem, algo, sizes, input_filename, output_filename, runs = 20):
 
