@@ -81,6 +81,11 @@ def run_algo(problem, parameters, algo, runs):
     return result
 
 def generate_results(setup_problem, parameters, algo, sizes, input_filename, output_filename, runs = 20):
+    arr_parameters = []
+    for key in parameters.keys():
+        arr_parameters.append(key + ": " + str(parameters.get(key)))
+    str_parameters = ";".join(arr_parameters)
+
     for size in sizes:
         with open(output_filename, "a") as output_file:
             problem = setup_problem(input_filename, size)
@@ -90,7 +95,8 @@ def generate_results(setup_problem, parameters, algo, sizes, input_filename, out
             for run in result:
                 total_cost += run[0]
                 total_time += run[1]
-            output_file.write("\n" + input_filename + "," + str(size) + "," + algo.__name__ + "," + str(parameters) + "," + str(total_cost / runs) + "," + str(total_time / runs))
+            # Problem,Size,Algorithm,Parameters,Cost,Time
+            output_file.write("\n" + input_filename + "," + str(size) + "," + algo.__name__ + "," + str_parameters + "," + str(total_cost / runs) + "," + str(total_time / runs))
 
 def tune_parameters(setup_problem, algo, sizes, input_filename, output_filename, runs = 20):
 
@@ -100,6 +106,13 @@ def tune_parameters(setup_problem, algo, sizes, input_filename, output_filename,
     tournament_sizes = [2, 5, 10]
     p_cs = [0.8, 0.9, 1.0]
     p_ms = [0.01, 0.05, 0.10]
+
+    popsizes = [100]
+    maxgens = [100]
+    elitisms = [1]
+    tournament_sizes = [2]
+    p_cs = [0.8]
+    p_ms = [0.01]
 
     parameter_combinations = numpy.array(numpy.meshgrid(popsizes, maxgens, elitisms, tournament_sizes, p_cs, p_ms)).T.reshape(-1, 6)
     for parameter_combination in parameter_combinations:
