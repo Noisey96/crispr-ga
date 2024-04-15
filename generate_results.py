@@ -81,6 +81,8 @@ def run_algo(problem, parameters, algo, runs):
     return result
 
 def generate_results(setup_problem, parameters, algo, sizes, input_filename, output_filename, runs = 20):
+    with open(output_filename, "a") as output_file:
+        output_file.write("Problem,Algorithm,Parameters,Cost,Time")
     for size in sizes:
         with open(output_filename, "a") as output_file:
             problem = setup_problem(input_filename, size)
@@ -90,10 +92,7 @@ def generate_results(setup_problem, parameters, algo, sizes, input_filename, out
             for run in result:
                 total_cost += run[0]
                 total_time += run[1]
-            output_file.write("Cost: " + str(total_cost / runs) + "\n")
-            output_file.write("Time: " + str(total_time / runs) + "\n")
-    with open(output_filename, "a") as output_file:
-        output_file.write("----" + algo.__name__ + " with " + str(parameters) + " over " + input_filename + "----" + "\n")
+            output_file.write(input_filename + "," + algo.__name__ + "," + str(parameters) + "," + str(total_cost / runs) + "," + str(total_time / runs) + "\n")
 
 def tune_parameters(setup_problem, algo, sizes, input_filename, output_filename, runs = 20):
 
@@ -119,30 +118,30 @@ def tune_parameters(setup_problem, algo, sizes, input_filename, output_filename,
 
 if __name__ == '__main__':
 
-    tune_parameters(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.txt", 5)
+    tune_parameters(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.csv", 5)
 
     #print(setup_knapsack("p01", 1))
 
-    #generate_results(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.txt", 5)
+    #generate_results(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.csv", 5)
 
-    #generate_results(setup_csv_tsp, held_karp, list(range(10, 20, 10)), "tsp/medium.csv", "results.txt"))
-    #generate_results(setup_csv_tsp, tsp_generational_ga, [100], "tsp/medium.csv", "results_ga.txt")
-    #generate_results(setup_csv_tsp, tsp_generational_ga, [5, 10, 15, 20, 23], "tsp/medium.csv", "results_ga.txt")
+    #generate_results(setup_csv_tsp, held_karp, list(range(10, 20, 10)), "tsp/medium.csv", "results.csv"))
+    #generate_results(setup_csv_tsp, tsp_generational_ga, [100], "tsp/medium.csv", "results_ga.csv")
+    #generate_results(setup_csv_tsp, tsp_generational_ga, [5, 10, 15, 20, 23], "tsp/medium.csv", "results_ga.csv")
 
-    #generate_results(setup_knapsack, dp, [1], "p01",  "results_dp.txt")
-    #generate_results(setup_knapsack, dp, [1], "p02",  "results_dp.txt")
-    #generate_results(setup_knapsack, dp, [1], "p03",  "results_dp.txt")
-    #generate_results(setup_knapsack, dp, [1], "p04",  "results_dp.txt")
-    #generate_results(setup_knapsack, dp, [1], "p05",  "results_dp.txt")
-    #generate_results(setup_knapsack, dp, [1], "p06",  "results_dp.txt")
-    #generate_results(setup_knapsack, dp, [1], "p07",  "results_dp.txt")
-    #generate_results(setup_knapsack, dp, [1], "p08",  "results_dp.txt")
+    #generate_results(setup_knapsack, dp, [1], "p01",  "results_dp.csv")
+    #generate_results(setup_knapsack, dp, [1], "p02",  "results_dp.csv")
+    #generate_results(setup_knapsack, dp, [1], "p03",  "results_dp.csv")
+    #generate_results(setup_knapsack, dp, [1], "p04",  "results_dp.csv")
+    #generate_results(setup_knapsack, dp, [1], "p05",  "results_dp.csv")
+    #generate_results(setup_knapsack, dp, [1], "p06",  "results_dp.csv")
+    #generate_results(setup_knapsack, dp, [1], "p07",  "results_dp.csv")
+    #generate_results(setup_knapsack, dp, [1], "p08",  "results_dp.csv")
 
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p01", "results_ga.txt")
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p02", "results_ga.txt")
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p03", "results_ga.txt")
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p04", "results_ga.txt")
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p05", "results_ga.txt")
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p06", "results_ga.txt")
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p07", "results_ga.txt")
-    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p08", "results_ga.txt")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p01", "results_ga.csv")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p02", "results_ga.csv")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p03", "results_ga.csv")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p04", "results_ga.csv")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p05", "results_ga.csv")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p06", "results_ga.csv")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p07", "results_ga.csv")
+    #generate_results(setup_knapsack, knapsack_generational_ga, [1], "p08", "results_ga.csv")
