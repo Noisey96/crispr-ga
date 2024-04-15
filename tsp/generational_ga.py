@@ -2,6 +2,7 @@ import random
 import math
 import numpy
 
+# fitness_function
 def fitness_function(problem, generation):
     graph = problem
 
@@ -16,6 +17,7 @@ def fitness_function(problem, generation):
         fitnesses.append(fitness)
     return fitnesses
 
+# parent_selection
 def tournament_selection(fitnesses, tournament_size):
     parent_indices = set()
     while len(parent_indices) < 2:
@@ -33,6 +35,7 @@ def tournament_selection(fitnesses, tournament_size):
     
     return list(parent_indices)
 
+# recombination_operators
 def create_edge_table(parent_1, parent_2):
     edge_table = [set() for i in range(len(parent_1))]
     for i in range(len(parent_1)):
@@ -112,6 +115,7 @@ def edge_recombination_crossover(parent_1, parent_2, p_c):
         else:
             return parent_2
 
+# mutation_operators
 def simple_inversion(gene, i, j):
     new_gene = list(gene[0:i])
     new_gene.extend(list(gene[j:i:-1]))
@@ -122,8 +126,8 @@ def simple_inversion(gene, i, j):
 def simple_inversion_mutation(gene, p_m):
     if random.uniform(0, 1) < p_m:
         n = len(gene)
-        i = math.floor(random.uniform(1, n))
-        if i == 1:
+        i = math.floor(random.uniform(0, n))
+        if i == 0:
             j = math.floor(random.uniform(i + 1, n - 1))
         else:
             j = math.floor(random.uniform(i + 1, n))
@@ -133,10 +137,28 @@ def simple_inversion_mutation(gene, p_m):
     else:
         return gene
 
-def generate_initial_generation(popsize, genesize):
+# generate_initial_generation functions
+def random_gen(problem, popsize):
     initial_generation = []
     for _ in range(popsize):
-        gene = list(numpy.random.permutation(genesize))
+        gene = list(numpy.random.permutation(len(problem)))
+        initial_generation.append(gene)
+    return initial_generation
+
+def closest_neighbor_gen(problem, popsize):
+    initial_generation = []
+    for _ in range(popsize):
+        gene = [math.floor(random.uniform(0, len(problem)))]
+        while len(gene) < len(problem):
+            distances = problem[gene[len(gene) - 1]]
+            closest_distance = float("inf")
+            for neighbor in range(len(distances)):
+                if neighbor not in gene:
+                    distance = distances[neighbor]
+                    if distance < closest_distance:
+                        closest_distance = distance
+                        closest_neighbor = neighbor
+            gene.append(closest_neighbor)
         initial_generation.append(gene)
     return initial_generation
 
@@ -162,16 +184,16 @@ def generational_ga(problem, parameters = {
         "p_c": 1,
         "p_m": 0.10,
     }):
-    graph = problem
 
     functions = {
+        "generate_initial_generation": closest_neighbor_gen,
         "fitness_function": fitness_function,
         "parent_selection": tournament_selection,
         "recombination_operator": edge_recombination_crossover,
         "mutation_operator": simple_inversion_mutation,
     }
 
-    current_generation = generate_initial_generation(parameters["popsize"], len(graph))
+    current_generation = functions["generate_initial_generation"](problem, parameters["popsize"])
     for n in range(parameters["maxgen"]):
         print(n)
         fitnesses = functions["fitness_function"](problem, current_generation)
