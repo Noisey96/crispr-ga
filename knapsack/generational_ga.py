@@ -88,14 +88,14 @@ def generational_ga(problem):
 
     parameters = {
         "popsize": 100,
-        "maxgen": 1000,
+        "maxgen": 4000,
         "fitness_function": penalty_function,
-        "elitism": 10,
+        "elitism": 5,
         "parent_selection": tournament_selection,
-        "tournament_size": 10,
+        "tournament_size": 2,
         "recombination_operator": uniform_crossover,
         "mutation_operator": bit_flip,
-        "p_m": 0.10,
+        "p_m": 0.05,
     }
 
     current_generation = generate_initial_generation(parameters["popsize"], len(prices))

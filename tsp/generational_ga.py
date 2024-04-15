@@ -157,7 +157,7 @@ def generational_ga(problem):
         "fitness_function": fitness_function,
         "elitism": 5,
         "parent_selection": tournament_selection,
-        "tournament_size": 5,
+        "tournament_size": 2,
         "recombination_operator": edge_recombination_crossover,
         "mutation_operator": simple_inversion_mutation,
         "p_m": 0.10,
@@ -165,10 +165,12 @@ def generational_ga(problem):
 
     current_generation = generate_initial_generation(parameters["popsize"], len(graph))
     for n in range(parameters["maxgen"]):
+        print(n)
         fitnesses = parameters["fitness_function"](problem, current_generation)
 
         next_generation = []
         elites = determine_n_best(fitnesses, parameters["elitism"])
+        #print([(fitnesses[x], x) for x in elites])
         for elite in elites:
             next_generation.append(current_generation[elite])
 
