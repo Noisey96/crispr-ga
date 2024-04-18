@@ -183,35 +183,37 @@ def generational_ga(problem, parameters = {
         "tournament_size": 2,
         "p_c": 1,
         "p_m": 0.10,
-    }):
-
-    functions = {
         "generate_initial_generation": closest_neighbor_gen,
         "fitness_function": fitness_function,
         "parent_selection": tournament_selection,
         "recombination_operator": edge_recombination_crossover,
         "mutation_operator": simple_inversion_mutation,
-    }
+    }):
 
-    current_generation = functions["generate_initial_generation"](problem, parameters["popsize"])
+    current_generation = parameters["generate_initial_generation"](problem, parameters["popsize"])
     for n in range(parameters["maxgen"]):
         print(n)
-        fitnesses = functions["fitness_function"](problem, current_generation)
+        fitnesses = parameters["fitness_function"](problem, current_generation)
 
         next_generation = []
-        elites = determine_n_best(fitnesses, parameters["elitism"])
-        #print([(fitnesses[x], x) for x in elites])
-        for elite in elites:
-            next_generation.append(current_generation[elite])
+        if parameters.get("elitism") is not None:
+            elites = determine_n_best(fitnesses, parameters["elitism"])
+            #print([(fitnesses[x], x) for x in elites])
+            for elite in elites:
+                next_generation.append(current_generation[elite])
 
         while len(next_generation) < len(current_generation):
-            [parent_1_index, parent_2_index] = functions["parent_selection"](fitnesses, parameters["tournament_size"]) 
-            child = functions["recombination_operator"](current_generation[parent_1_index], current_generation[parent_2_index], parameters["p_c"])
-            child = functions["mutation_operator"](child, parameters["p_m"])
+            [parent_1_index, parent_2_index] = parameters["parent_selection"](fitnesses, parameters["tournament_size"]) 
+            if parameters.get("recombination_operator") is not None:
+                child = parameters["recombination_operator"](current_generation[parent_1_index], current_generation[parent_2_index], parameters["p_c"])
+            else:
+                child = parent_1_index 
+            if parameters.get("mutation_operator") is not None and parameters.get("p_m") is not None:
+                child = parameters["mutation_operator"](child, parameters["p_m"])
             next_generation.extend([child])
         current_generation = next_generation
         
-    fitnesses = functions["fitness_function"](problem, current_generation)
+    fitnesses = parameters["fitness_function"](problem, current_generation)
 
     return min(fitnesses)
     

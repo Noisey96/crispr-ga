@@ -5,7 +5,7 @@ from multiprocessing import Pool
 from knapsack.dp import dp
 from knapsack.generational_ga import generational_ga as knapsack_generational_ga
 from tsp.held_karp import held_karp
-from tsp.generational_ga import generational_ga as tsp_generational_ga
+import tsp.generational_ga as ga
 
 def setup_csv_tsp(filename, size):
     # grab vertices from given filename
@@ -99,6 +99,11 @@ def tune_parameters(setup_problem, algo, input_filename, output_filename, runs =
             "tournament_size": int(parameter_combination[3]),
             "p_c": parameter_combination[4],
             "p_m": parameter_combination[5],
+            "generate_initial_generation": ga.closest_neighbor_gen,
+            "fitness_function": ga.fitness_function,
+            "parent_selection": ga.tournament_selection,
+            "recombination_operator": ga.edge_recombination_crossover,
+            "mutation_operator": ga.simple_inversion_mutation,
         }
         run_batch(setup_problem, parameters, algo, input_filename, output_filename, runs)
     
@@ -106,7 +111,7 @@ def tune_parameters(setup_problem, algo, input_filename, output_filename, runs =
 if __name__ == '__main__':
 
     #tune_parameters(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.csv", 20)
-    tune_parameters(setup_tsp, tsp_generational_ga, "tsp/kroA100.tsp", "results_ga.csv", 20)
+    tune_parameters(setup_tsp, ga.generational_ga, "tsp/kroA100.tsp", "results_ga.csv", 20)
 
     #print(setup_knapsack("p01", 1))
 
