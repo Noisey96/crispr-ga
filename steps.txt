@@ -1,0 +1,7 @@
+1. Parameter tuned regular GA with
+    popsizes = [100]
+    maxgens = [200]
+    elitisms = [1, 5, 10]
+    tournament_sizes = [2, 5, 10]
+    p_cs = [0.8, 0.9, 1]
+    p_ms = [0.01, 0.05, 0.10]
