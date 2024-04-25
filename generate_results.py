@@ -1,5 +1,6 @@
 import math
 import numpy
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from multiprocessing import Pool
 from knapsack.dp import dp
@@ -24,6 +25,32 @@ def setup_csv_tsp(filename, size):
             row.append(distance)
         graph.append(row)
     return graph
+
+def setup_xml_tsp(filename):
+    # Parse the XML file
+    tree = ET.parse(filename)
+    root = tree.getroot()
+
+    # Find the graph element
+    graph_element = root.find('.//graph')
+
+    # Find the number of vertices
+    num_vertices = len(graph_element)
+
+    # Initialize an empty matrix
+    distance_matrix = [[0 for _ in range(num_vertices)] for _ in range(num_vertices)]
+
+    # Fill the matrix with edge costs
+    vertex_count = 0
+    for vertex in graph_element:
+        edges = vertex.findall('./edge')
+        for edge in edges:
+            target_vertex_index = int(edge.text)
+            cost = edge.get('cost')
+            distance_matrix[vertex_count][target_vertex_index] = float(cost)
+        vertex_count += 1
+
+    return distance_matrix
 
 def setup_tsp(filename):
     # grab vertices from given filename
@@ -87,11 +114,11 @@ def run_batch(setup_problem, parameters, algo, input_filename, output_filename, 
 
 def tune_parameters(setup_problem, algo, input_filename, output_filename, runs = 20):
     popsizes = [100]
-    maxgens = [200]
-    elitisms = [1, 5, 10]
-    tournament_sizes = [2, 5, 10]
-    p_cs = [0.8, 0.9, 1]
-    p_ms = [0.01, 0.05, 0.10]
+    maxgens = [10000]
+    elitisms = [1]
+    tournament_sizes = [2]
+    p_cs = [1]
+    p_ms = [0.10]
 
     parameter_combinations = numpy.array(numpy.meshgrid(popsizes, maxgens, elitisms, tournament_sizes, p_cs, p_ms)).T.reshape(-1, 6)
     for parameter_combination in parameter_combinations:
@@ -114,7 +141,7 @@ def tune_parameters(setup_problem, algo, input_filename, output_filename, runs =
 if __name__ == '__main__':
 
     #tune_parameters(setup_tsp, tsp_generational_ga, [52], "tsp/berlin52.tsp", "results_ga.csv", 20)
-    tune_parameters(setup_tsp, ga.generational_ga, "tsp/pr76.tsp", "results_ga.csv", 20)
+    tune_parameters(setup_xml_tsp, ga.generational_ga, "tsp/brazil.xml", "results_ga.csv", 1)
 
     #print(setup_knapsack("p01", 1))
 
